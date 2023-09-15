@@ -2,11 +2,23 @@ use crate::utils::lerp;
 
 pub type PixelData = u32;
 
+#[derive(Debug, PartialEq, Eq, Default)]
 pub struct Color {
-    r: u8, g: u8, b: u8, a: u8
+    pub r: u8,
+    pub g: u8,
+    pub b: u8,
+    pub a: u8
 }
 
 impl Color {
+    pub fn new(r: u8, g: u8, b: u8) -> Color {
+        Color { r, g, b, a: 255 }
+    }
+
+    pub fn new_with_alpha(r: u8, g: u8, b: u8, a: u8) -> Color {
+        Color { r, g, b, a }
+    }
+
     pub fn from_pixel_data(data: PixelData) -> Color {
         Color {
             r: (data >> 24) as u8,

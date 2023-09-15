@@ -1,5 +1,4 @@
-use crate::utils::color::PixelData;
-use crate::utils::color::Color;
+use crate::utils::color::{Color, PixelData};
 
 pub struct Image {
     width: usize,

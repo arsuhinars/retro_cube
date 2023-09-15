@@ -2,11 +2,9 @@ pub mod vector;
 pub mod color;
 pub mod image;
 
-pub const EPSILON: f32 = 0.001;
-
 #[inline]
 pub fn approximately(a: f32, b: f32) -> bool {
-    (a - b).abs() < EPSILON
+    (a - b).abs() < f32::EPSILON
 }
 
 #[inline]
