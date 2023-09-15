@@ -1,0 +1,8 @@
+[package]
+name = "retro_cube"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+imgui-rs = "1.47.0"
+sdl2 = "0.35.2"
