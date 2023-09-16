@@ -36,12 +36,8 @@ fn test_plane_cast_non_none() {
     let result = plane_cast(&n, d, &origin, &direction);
 
     match result {
-        Some(v) => {
-            assert!(approximately(Vector3::dot(&n, &v) - d, 0.0));
-        }
-        None => {
-            assert!(false);
-        }
+        Some(v) => assert!(approximately(Vector3::dot(&n, &v) - d, 0.0)),
+        None => assert!(false)
     }
 }
 
@@ -56,9 +52,7 @@ fn test_plane_cast_none() {
     let result = plane_cast(&n, d, &origin, &direction);
 
     match result {
-        Some(_) => {
-            assert!(false);
-        },
-        _ => {}
+        Some(_) => assert!(false),
+        _ => ()
     }
 }
