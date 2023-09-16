@@ -19,10 +19,12 @@ impl Vector3 {
         Vector3 { x, y, z }
     }
 
+    #[inline]
     pub fn dot(a: &Vector3, b: &Vector3) -> f32 {
         a.x * b.x + a.y * b.y + a.z * b.z
     }
 
+    #[inline]
     pub fn cross(a: &Vector3, b: &Vector3) -> Vector3 {
         Vector3 {
             x: a.y * b.z - a.z * b.y,
@@ -31,10 +33,17 @@ impl Vector3 {
         }
     }
 
-    pub fn length(&self) -> f32 {
-        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
+    #[inline]
+    pub fn sqr_length(&self) -> f32 {
+        self.x.powi(2) + self.y.powi(2) + self.z.powi(2)
     }
 
+    #[inline]
+    pub fn length(&self) -> f32 {
+        self.sqr_length().sqrt()
+    }
+
+    #[inline]
     pub fn normalized(&self) -> Vector3 {
         let l = self.length();
 
@@ -43,16 +52,19 @@ impl Vector3 {
         }
     }
 
+    #[inline]
     pub fn angle(a: &Vector3, b: &Vector3) -> f32 {
         (Vector3::dot(a, b) / (a.length() * b.length())).acos()
     }
 
+    #[inline]
     pub fn approximately(&self, v: &Vector3) -> bool {
         approximately(self.x, v.x) &&
         approximately(self.y, v.y) &&
         approximately(self.z, v.z)
     }
 
+    #[inline]
     pub fn abs(&self) -> Vector3 {
         Vector3 {
             x: self.x.abs(), y: self.y.abs(), z: self.z.abs()

@@ -1,7 +1,7 @@
 use super::vector::Vector3;
 use super::matrix::{Matrix3, Matrix4, translate_matrix, euler_rotation_matrix, inverse_euler_rotation_matrix};
 
-#[derive(Default, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct Transform {
     position: Vector3,
     rotation: Vector3,
@@ -77,5 +77,19 @@ impl Transform {
         self.inverse_direction_matrix = Matrix3::from(self.inverse_position_matrix);
 
         self.dirty_flag = false;
+    }
+}
+
+impl Default for Transform {
+    fn default() -> Self {
+        Self {
+            position: Vector3::default(),
+            rotation: Vector3::default(),
+            dirty_flag: true,
+            position_matrix: Matrix4::default(),
+            inverse_position_matrix: Matrix4::default(),
+            direction_matrix: Matrix3::default(),
+            inverse_direction_matrix: Matrix3::default()
+        }
     }
 }
