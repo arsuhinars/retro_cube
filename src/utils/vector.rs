@@ -52,6 +52,12 @@ impl Vector3 {
         approximately(self.y, v.y) &&
         approximately(self.z, v.z)
     }
+
+    pub fn abs(&self) -> Vector3 {
+        Vector3 {
+            x: self.x.abs(), y: self.y.abs(), z: self.z.abs()
+        }
+    }
 }
 
 impl ops::Add<Vector3> for Vector3 {
