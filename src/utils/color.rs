@@ -1,4 +1,4 @@
-use crate::utils::lerp;
+use super::lerp;
 
 pub type PixelData = u32;
 
