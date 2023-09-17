@@ -19,22 +19,6 @@ impl Color {
         Color { r, g, b, a }
     }
 
-    pub fn from_pixel_data(data: PixelData) -> Color {
-        Color {
-            r: (data >> 24) as u8,
-            g: ((data >> 16) & 0xFF) as u8,
-            b: ((data >> 8) & 0xFF) as u8,
-            a: (data & 0xFF) as u8
-        }
-    }
-
-    pub fn to_pixel_data(&self) -> PixelData {
-        ((self.r as u32) << 24) |
-        ((self.g as u32) << 16) |
-        ((self.b as u32) << 8) |
-        (self.a as u32)
-    }
-
     pub fn tint(&self, tint: &Color) -> Color {
         Color {
             r: ((self.r as u32) * (tint.r as u32) / 255) as u8,
@@ -51,5 +35,25 @@ impl Color {
             b: lerp(a.b as f32, b.b as f32, t) as u8,
             a: lerp(a.a as f32, b.a as f32, t) as u8
         }
+    }
+}
+
+impl From<PixelData> for Color {
+    fn from(value: PixelData) -> Self {
+        Color {
+            r: (value >> 24) as u8,
+            g: ((value >> 16) & 0xFF) as u8,
+            b: ((value >> 8) & 0xFF) as u8,
+            a: (value & 0xFF) as u8
+        }
+    }
+}
+
+impl From<Color> for PixelData {
+    fn from(value: Color) -> Self {
+        ((value.r as u32) << 24) |
+        ((value.g as u32) << 16) |
+        ((value.b as u32) << 8) |
+        (value.a as u32)
     }
 }

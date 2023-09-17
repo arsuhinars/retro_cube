@@ -1,19 +1,19 @@
-use crate::utils::color::Color;
+use crate::utils::color::{Color, PixelData};
 
 #[test]
 fn test_from_pixel_data() {
-    assert_eq!(Color::from_pixel_data(0xAABBCCDD), Color::new_with_alpha(170, 187, 204, 221));
-    assert_eq!(Color::from_pixel_data(0x10203040), Color::new_with_alpha(16, 32, 48, 64 ));
-    assert_eq!(Color::from_pixel_data(0xFFFFFFFF), Color::new_with_alpha(255, 255, 255, 255));
-    assert_eq!(Color::from_pixel_data(0x00000000), Color::new_with_alpha(0, 0, 0, 0));
+    assert_eq!(Color::from(0xAABBCCDD), Color::new_with_alpha(170, 187, 204, 221));
+    assert_eq!(Color::from(0x10203040), Color::new_with_alpha(16, 32, 48, 64 ));
+    assert_eq!(Color::from(0xFFFFFFFF), Color::new_with_alpha(255, 255, 255, 255));
+    assert_eq!(Color::from(0x00000000), Color::new_with_alpha(0, 0, 0, 0));
 }
 
 #[test]
 fn test_to_pixel_data() {
-    assert_eq!(Color::new_with_alpha(255, 0, 0, 255).to_pixel_data(), 0xFF0000FF);
-    assert_eq!(Color::new_with_alpha(127, 96, 48, 50).to_pixel_data(), 0x7F603032);
-    assert_eq!(Color::new_with_alpha(0, 128, 255, 255).to_pixel_data(), 0x0080FFFF);
-    assert_eq!(Color::new_with_alpha(50, 50, 50, 50).to_pixel_data(), 0x32323232);
+    assert_eq!(PixelData::from(Color::new_with_alpha(255, 0, 0, 255)), 0xFF0000FF);
+    assert_eq!(PixelData::from(Color::new_with_alpha(127, 96, 48, 50)), 0x7F603032);
+    assert_eq!(PixelData::from(Color::new_with_alpha(0, 128, 255, 255)), 0x0080FFFF);
+    assert_eq!(PixelData::from(Color::new_with_alpha(50, 50, 50, 50)), 0x32323232);
 }
 
 #[test]

@@ -29,7 +29,7 @@ impl Image {
 
     #[inline]
     pub fn read_color(&self, x: usize, y: usize) -> Color {
-        Color::from_pixel_data(self.read_pixel(x, y))
+        Color::from(self.read_pixel(x, y))
     }
 
     #[inline]
@@ -39,6 +39,37 @@ impl Image {
 
     #[inline]
     pub fn write_color(&mut self, x: usize, y: usize, color: Color) {
-        self.write_pixel(x, y, color.to_pixel_data());
+        self.write_pixel(x, y, color.into());
+    }
+
+    pub fn iter(&self) -> ImageIter {
+        ImageIter { image: self, curr_x: 0, curr_y: 0 }
+    }
+}
+
+pub struct ImageIter<'a> {
+    image: &'a Image,
+    curr_x: usize,
+    curr_y: usize
+}
+
+impl<'a> Iterator for ImageIter<'a> {
+    type Item = (usize, usize, Color);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let result = Some(
+            (self.curr_x, self.curr_y, self.image.read_color(self.curr_x, self.curr_y))
+        );
+
+        self.curr_x += 1;
+        if self.curr_x == self.image.width {
+            self.curr_y += 1;
+            self.curr_x = 0;
+            if self.curr_y == self.image.height {
+                return None;
+            }
+        }
+
+        return result;
     }
 }

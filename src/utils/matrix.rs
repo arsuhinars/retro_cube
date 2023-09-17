@@ -2,10 +2,10 @@ use std::{ops, convert};
 use super::vector::{Vector3, RIGHT_VECTOR};
 
 #[derive(Default, Clone, Copy)]
-pub struct Matrix3([[f32; 3]; 3]);
+pub struct Matrix3(pub [[f32; 3]; 3]);
 
 #[derive(Default, Clone, Copy)]
-pub struct Matrix4([[f32; 4]; 4]);
+pub struct Matrix4(pub [[f32; 4]; 4]);
 
 pub fn translate_matrix(translate: &Vector3) -> Matrix4 {
     Matrix4([
