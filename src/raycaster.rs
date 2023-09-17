@@ -1,6 +1,4 @@
-use crate::utils::vector::Vector3;
-use crate::utils::transform::Transform;
-use crate::utils::plane_cast;
+use crate::utils::{vector::Vector3, transform::Transform, plane_cast};
 
 pub struct RaycastHit {
     pub position: Vector3,
@@ -9,9 +7,7 @@ pub struct RaycastHit {
 }
 
 pub trait Raycaster {
-    fn get_tranform(&mut self) -> &mut Transform;
-
-    fn set_transform(&mut self, transform: &Transform);
+    fn get_mut_tranform(&mut self) -> &mut Transform;
 
     fn raycast(&mut self, origin: &Vector3, direction: &Vector3) -> Option<RaycastHit>;
 }
@@ -22,17 +18,13 @@ pub struct BoxRaycaster {
 }
 
 impl BoxRaycaster {
-    pub fn new(transform: &Transform, size: &Vector3) -> BoxRaycaster {
-        BoxRaycaster { transform: *transform, half_size: *size * 0.5 }
+    pub fn new(size: &Vector3) -> BoxRaycaster {
+        BoxRaycaster { transform: Transform::default(), half_size: *size * 0.5 }
     }
 }
 
 impl Raycaster for BoxRaycaster {
-    fn get_tranform(&mut self) -> &mut Transform { &mut self.transform }
-
-    fn set_transform(&mut self, transform: &Transform) {
-        self.transform = *transform
-    }
+    fn get_mut_tranform(&mut self) -> &mut Transform { &mut self.transform }
 
     fn raycast(&mut self, origin: &Vector3, direction: &Vector3) -> Option<RaycastHit> {
         let mut o = self.transform.inverse_transform_position(origin);
@@ -111,17 +103,13 @@ pub struct SphereRaycaster {
 }
 
 impl SphereRaycaster {
-    pub fn new(transform: &Transform, radius: f32) -> SphereRaycaster {
-        SphereRaycaster { transform: *transform, radius }
+    pub fn new(radius: f32) -> SphereRaycaster {
+        SphereRaycaster { transform: Default::default(), radius }
     }
 }
 
 impl Raycaster for SphereRaycaster {
-    fn get_tranform(&mut self) -> &mut Transform { &mut self.transform }
-
-    fn set_transform(&mut self, transform: &Transform) {
-        self.transform = *transform
-    }
+    fn get_mut_tranform(&mut self) -> &mut Transform { &mut self.transform }
 
     fn raycast(&mut self, origin: &Vector3, direction: &Vector3) -> Option<RaycastHit> {
         let o = self.transform.inverse_transform_position(origin);
