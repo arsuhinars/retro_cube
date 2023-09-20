@@ -16,6 +16,10 @@ impl Image {
         }
     }
 
+    pub fn as_mut_slice(&mut self) -> &mut [PixelData] {
+        &mut self.data
+    }
+
     #[inline]
     pub fn get_width(&self) -> usize { self.width }
 
