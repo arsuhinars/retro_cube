@@ -30,32 +30,37 @@ impl Raycaster for BoxRaycaster {
         let mut o = self.transform.inverse_transform_position(origin);
         let mut d = self.transform.inverse_transform_direction(direction);
 
-        if o.x < 0.0 {
-            o.x *= -1.0;
-            d.x *= -1.0;
+        let i = (o.x < 0.0, o.y < 0.0, o.z < 0.0);
+
+        fn invert_vector(v: &Vector3, mask: (bool, bool, bool)) -> Vector3 {
+            let mut a = *v;
+
+            if mask.0 {
+                a.x *= -1.0;
+            }
+            if mask.1 {
+                a.y *= -1.0;
+            }
+            if mask.2 {
+                a.z *= -1.0;
+            }
+
+            return a
         }
 
-        if o.y < 0.0 {
-            o.y *= -1.0;
-            d.y *= -1.0;
-        }
-
-        if o.z < 0.0 {
-            o.z *= -1.0;
-            o.z *= -1.0;
-        }
+        o = invert_vector(&o, i);
+        d = invert_vector(&d, i);
 
         let n = Vector3::new(0.0, 0.0, 1.0);
         match plane_cast(&n, self.half_size.z, &o, &d) {
-            Some(p) => {
-                return if p.x < self.half_size.x && p.y < self.half_size.y {
-                    Some(RaycastHit {
+            Some(mut p) => {
+                if p.x.abs() < self.half_size.x && p.y.abs() < self.half_size.y {
+                    p = invert_vector(&p, i);
+                    return Some(RaycastHit {
                         position: self.transform.transform_position(&p),
                         local_position: p,
                         local_normal: n
                     })
-                } else {
-                    None
                 }
             },
             _ => ()
@@ -63,15 +68,14 @@ impl Raycaster for BoxRaycaster {
 
         let n = Vector3::new(0.0, 1.0, 0.0);
         match plane_cast(&n, self.half_size.y, &o, &d) {
-            Some(p) => {
-                return if p.x < self.half_size.x && p.z < self.half_size.z {
-                    Some(RaycastHit {
+            Some(mut p) => {
+                if p.x.abs() < self.half_size.x && p.z.abs() < self.half_size.z {
+                    p = invert_vector(&p, i);
+                    return Some(RaycastHit {
                         position: self.transform.transform_position(&p),
                         local_position: p,
                         local_normal: n
                     })
-                } else {
-                    None
                 }
             },
             _ => ()
@@ -79,15 +83,14 @@ impl Raycaster for BoxRaycaster {
 
         let n = Vector3::new(1.0, 0.0, 0.0);
         match plane_cast(&n, self.half_size.x, &o, &d) {
-            Some(p) => {
-                return if p.y < self.half_size.y && p.z < self.half_size.z {
-                    Some(RaycastHit {
+            Some(mut p) => {
+                if p.y.abs() < self.half_size.y && p.z.abs() < self.half_size.z {
+                    p = invert_vector(&p, i);
+                    return Some(RaycastHit {
                         position: self.transform.transform_position(&p),
                         local_position: p,
                         local_normal: n
                     })
-                } else {
-                    None
                 }
             },
             _ => ()
@@ -115,10 +118,10 @@ impl Raycaster for SphereRaycaster {
         let o = self.transform.inverse_transform_position(origin);
         let d = self.transform.inverse_transform_direction(direction).normalized();
 
-        let a = Vector3::dot(&o, &d);
+        let a = Vector3::dot(&-o, &d);
         let t = a - (self.radius.powi(2) - o.sqr_length() + a.powi(2)).sqrt();
 
-        if t.is_nan() {
+        if t.is_nan() || t < 0.0 {
             return None;
         }
 
