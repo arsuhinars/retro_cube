@@ -2,7 +2,7 @@ use super::lerp;
 
 pub type PixelData = u32;
 
-#[derive(Debug, PartialEq, Eq, Default)]
+#[derive(Debug, PartialEq, Eq, Default, Clone, Copy)]
 pub struct Color {
     pub r: u8,
     pub g: u8,

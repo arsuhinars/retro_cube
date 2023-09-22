@@ -4,7 +4,6 @@ pub mod vector;
 pub mod matrix;
 pub mod transform;
 pub mod color;
-pub mod image;
 
 const EPSILON: f32 = 0.001;
 
