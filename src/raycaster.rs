@@ -1,4 +1,4 @@
-use crate::utils::{vector::Vector3, transform::Transform, plane_cast};
+use crate::utils::{vector::Vector3, transform::Transform, plane_cast, EPSILON};
 
 pub struct RaycastHit {
     pub position: Vector3,
@@ -33,7 +33,7 @@ impl Raycaster for BoxRaycaster {
 
         let i = (o.x < 0.0, o.y < 0.0, o.z < 0.0);
 
-        fn invert_vector(v: &Vector3, mask: (bool, bool, bool)) -> Vector3 {
+        fn invert_vector(v: &Vector3, mask: &(bool, bool, bool)) -> Vector3 {
             let mut a = *v;
 
             if mask.0 {
@@ -49,58 +49,51 @@ impl Raycaster for BoxRaycaster {
             return a
         }
 
-        o = invert_vector(&o, i);
-        d = invert_vector(&d, i);
+        o = invert_vector(&o, &i);
+        d = invert_vector(&d, &i);
 
-        let n = Vector3::new(0.0, 0.0, 1.0);
-        match plane_cast(&n, self.half_size.z, &o, &d) {
-            Some(mut p) => {
-                if p.x.abs() < self.half_size.x && p.y.abs() < self.half_size.y {
-                    p = invert_vector(&p, i);
-                    return Some(RaycastHit {
+        let try_cast_plane = |
+            plane_normal: Vector3,
+            plane_d: f32,
+        | -> Option<RaycastHit> {
+            let result = plane_cast(&plane_normal, plane_d, &o, &d);
+            
+            return result.and_then(|mut p| {
+                if 
+                    p.x.abs() <= self.half_size.x + EPSILON &&
+                    p.y.abs() <= self.half_size.y + EPSILON &&
+                    p.z.abs() <= self.half_size.z + EPSILON
+                {
+                    let n = invert_vector(&plane_normal, &i);
+                    p = invert_vector(&p, &i);
+                    Some(RaycastHit {
                         position: self.transform.transform_position(&p),
                         normal: self.transform.transform_direction(&n),
                         local_position: p,
                         local_normal: n
                     })
+                } else {
+                    None
                 }
-            },
-            _ => ()
-        }
+            });
+        };
 
-        let n = Vector3::new(0.0, 1.0, 0.0);
-        match plane_cast(&n, self.half_size.y, &o, &d) {
-            Some(mut p) => {
-                if p.x.abs() < self.half_size.x && p.z.abs() < self.half_size.z {
-                    p = invert_vector(&p, i);
-                    return Some(RaycastHit {
-                        position: self.transform.transform_position(&p),
-                        normal: self.transform.transform_direction(&n),
-                        local_position: p,
-                        local_normal: n
-                    })
-                }
-            },
-            _ => ()
-        }
-
-        let n = Vector3::new(1.0, 0.0, 0.0);
-        match plane_cast(&n, self.half_size.x, &o, &d) {
-            Some(mut p) => {
-                if p.y.abs() < self.half_size.y && p.z.abs() < self.half_size.z {
-                    p = invert_vector(&p, i);
-                    return Some(RaycastHit {
-                        position: self.transform.transform_position(&p),
-                        normal: self.transform.transform_direction(&n),
-                        local_position: p,
-                        local_normal: n
-                    })
-                }
-            },
-            _ => ()
-        }
-
-        return None;
+        return None.or_else(|| {
+            try_cast_plane(
+                Vector3::new(0.0, 0.0, 1.0),
+                self.half_size.z
+            )
+        }).or_else(|| {
+            try_cast_plane(
+                Vector3::new(0.0, 1.0, 0.0),
+                self.half_size.y
+            )
+        }.or_else(|| {
+            try_cast_plane(
+                Vector3::new(1.0, 0.0, 0.0),
+                self.half_size.x
+            )
+        }));
     }
 }
 
