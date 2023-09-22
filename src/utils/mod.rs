@@ -5,7 +5,7 @@ pub mod matrix;
 pub mod transform;
 pub mod color;
 
-const EPSILON: f32 = 0.001;
+pub const EPSILON: f32 = 0.001;
 
 #[inline]
 pub fn approximately(a: f32, b: f32) -> bool {
