@@ -28,18 +28,19 @@ impl CheckerMaterial {
     }
 
     fn get_triplanar_weights(normal: &Vector3) -> Vector3 {
-        let s = normal.x + normal.y + normal.z;
+        let w = normal.abs();
+        let s = w.x + w.y + w.z;
         Vector3 {
-            x: normal.x.abs() / s,
-            y: normal.y.abs() / s,
-            z: normal.z.abs() / s
+            x: w.x / s,
+            y: w.y / s,
+            z: w.z / s
         }
     }
 }
 
 impl Material for CheckerMaterial {
     fn compute_surface_color(&self, position: &Vector3, normal: &Vector3) -> Color {
-        let albedo_x = self.sample_checker_texture(position.z, position.y);
+        let albedo_x = self.sample_checker_texture(position.y, position.z);
         let albedo_y = self.sample_checker_texture(position.x, position.z);
         let albedo_z = self.sample_checker_texture(position.x, position.y);
 
