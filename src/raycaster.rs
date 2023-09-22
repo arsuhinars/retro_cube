@@ -2,6 +2,7 @@ use crate::utils::{vector::Vector3, transform::Transform, plane_cast};
 
 pub struct RaycastHit {
     pub position: Vector3,
+    pub normal: Vector3,
     pub local_position: Vector3,
     pub local_normal: Vector3
 }
@@ -9,7 +10,7 @@ pub struct RaycastHit {
 pub trait Raycaster {
     fn get_mut_tranform(&mut self) -> &mut Transform;
 
-    fn raycast(&mut self, origin: &Vector3, direction: &Vector3) -> Option<RaycastHit>;
+    fn raycast(&self, origin: &Vector3, direction: &Vector3) -> Option<RaycastHit>;
 }
 
 pub struct BoxRaycaster {
@@ -26,7 +27,7 @@ impl BoxRaycaster {
 impl Raycaster for BoxRaycaster {
     fn get_mut_tranform(&mut self) -> &mut Transform { &mut self.transform }
 
-    fn raycast(&mut self, origin: &Vector3, direction: &Vector3) -> Option<RaycastHit> {
+    fn raycast(&self, origin: &Vector3, direction: &Vector3) -> Option<RaycastHit> {
         let mut o = self.transform.inverse_transform_position(origin);
         let mut d = self.transform.inverse_transform_direction(direction);
 
@@ -58,6 +59,7 @@ impl Raycaster for BoxRaycaster {
                     p = invert_vector(&p, i);
                     return Some(RaycastHit {
                         position: self.transform.transform_position(&p),
+                        normal: self.transform.transform_direction(&n),
                         local_position: p,
                         local_normal: n
                     })
@@ -73,6 +75,7 @@ impl Raycaster for BoxRaycaster {
                     p = invert_vector(&p, i);
                     return Some(RaycastHit {
                         position: self.transform.transform_position(&p),
+                        normal: self.transform.transform_direction(&n),
                         local_position: p,
                         local_normal: n
                     })
@@ -88,6 +91,7 @@ impl Raycaster for BoxRaycaster {
                     p = invert_vector(&p, i);
                     return Some(RaycastHit {
                         position: self.transform.transform_position(&p),
+                        normal: self.transform.transform_direction(&n),
                         local_position: p,
                         local_normal: n
                     })
@@ -114,7 +118,7 @@ impl SphereRaycaster {
 impl Raycaster for SphereRaycaster {
     fn get_mut_tranform(&mut self) -> &mut Transform { &mut self.transform }
 
-    fn raycast(&mut self, origin: &Vector3, direction: &Vector3) -> Option<RaycastHit> {
+    fn raycast(&self, origin: &Vector3, direction: &Vector3) -> Option<RaycastHit> {
         let o = self.transform.inverse_transform_position(origin);
         let d = self.transform.inverse_transform_direction(direction).normalized();
 
@@ -126,11 +130,13 @@ impl Raycaster for SphereRaycaster {
         }
 
         let p = o + d * t;
+        let n = p.normalized();
 
         return Some(RaycastHit {
             position: self.transform.transform_position(&p),
+            normal: self.transform.transform_direction(&n),
             local_position: p,
-            local_normal: p.normalized()
+            local_normal: n
         })
     }
 }
