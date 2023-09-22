@@ -5,21 +5,33 @@ use sdl2::render::Texture;
 use crate::raycaster::{Raycaster, RaycastHit};
 use crate::utils::{color::Color, vector::Vector3};
 use super::camera::Camera;
+use super::lightning::Lightning;
+use super::material::Material;
 
 pub struct Renderer {
     camera: Camera,
     raycaster: Box<dyn Raycaster>,
+    material: Box<dyn Material>,
+    lightning: Box<dyn Lightning>,
     render_texture: RefCell<Texture>,
     render_texture_size: (usize, usize)
 }
 
 impl Renderer {
-    pub fn new(camera: Camera, raycaster: Box<dyn Raycaster>, render_texture: Texture) -> Renderer {
+    pub fn new(
+        camera: Camera,
+        raycaster: Box<dyn Raycaster>,
+        material: Box<dyn Material>,
+        lightning: Box<dyn Lightning>,
+        render_texture: Texture
+    ) -> Renderer {
         let render_texture_size = query_texture_size(&render_texture);
 
         let mut renderer = Renderer {
             camera,
             raycaster,
+            material,
+            lightning,
             render_texture: RefCell::new(render_texture),
             render_texture_size
         };
@@ -44,6 +56,22 @@ impl Renderer {
 
     pub fn set_raycaster(&mut self, raycaster: Box<dyn Raycaster>) {
         self.raycaster = raycaster;
+    }
+
+    pub fn get_mut_material(&mut self) -> &mut dyn Material {
+        self.material.as_mut()
+    }
+
+    pub fn set_material(&mut self, material: Box<dyn Material>) {
+        self.material = material;
+    }
+
+    pub fn get_mut_lightning(&mut self) -> &mut dyn Lightning {
+        self.lightning.as_mut()
+    }
+
+    pub fn set_lightning(&mut self, lightning: Box<dyn Lightning>) {
+        self.lightning = lightning;
     }
 
     pub fn get_mut_render_texture(&mut self) -> &mut Texture {
@@ -95,7 +123,8 @@ impl Renderer {
     }
 
     fn compute_solid_color(&self, hit: &RaycastHit) -> Color {
-        Color::new(255, 255, 255)
+        let base_color = self.material.compute_surface_color(&hit.local_position, &hit.local_normal);
+        return self.lightning.apply_light(base_color, &hit.position, &hit.normal)
     }
 
     fn compute_background_color(&self, direction: &Vector3) -> Color {

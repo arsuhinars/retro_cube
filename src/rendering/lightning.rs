@@ -86,10 +86,3 @@ impl Lightning for DiffuseDirectLightning {
         base_color.tint(&light_color)
     }
 }
-
-// pub struct SpecularDirectLightning {
-//     pub direction: Vector3,
-//     pub color: Color,
-//     pub ambient_color: Color,
-//     pub specular_factor: f32
-// }
