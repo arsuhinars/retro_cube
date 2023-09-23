@@ -1,4 +1,7 @@
+use imgui_glow_renderer::AutoRenderer;
 use sdl2;
+use glow::{self, HasContext, COLOR_BUFFER_BIT};
+use imgui;
 
 use crate::rendering::camera::Camera;
 use crate::rendering::lightning::{DiffuseDirectLightning, UnlitLightning};
@@ -51,14 +54,46 @@ fn build_renderer(
     )
 }
 
+fn build_imgui(gl: glow::Context, window: &sdl2::video::Window) -> Result<(imgui::Context, AutoRenderer), String> {
+    let mut imgui = imgui::Context::create();
+    imgui.set_ini_filename(None);
+    imgui.set_log_filename(None);
+    imgui.fonts().add_font(&[imgui::FontSource::DefaultFontData { config: None }]);
+
+    let window_size = window.size();
+    let window_drawable_size = window.drawable_size();
+    let io = imgui.io_mut();
+    io.display_size = [window_size.0 as f32, window_size.1 as f32];
+    io.display_framebuffer_scale = [
+        (window_drawable_size.0 as f32) / (window_size.0 as f32),
+        (window_drawable_size.1 as f32) / (window_size.1 as f32),
+    ];
+
+    let renderer = AutoRenderer::initialize(
+        gl, &mut imgui
+    ).map_err(|err| err.to_string())?;
+
+    return Ok((imgui, renderer));
+}
+
+fn glow_context(window: &sdl2::video::Window) -> glow::Context {
+    unsafe {
+        glow::Context::from_loader_function(|s| window.subsystem().gl_get_proc_address(s) as _)
+    }
+}
+
 pub struct App {
     sdl_context: sdl2::Sdl,
     video: sdl2::VideoSubsystem,
     timer: sdl2::TimerSubsystem,
     event_pump: sdl2::EventPump,
-    canvas: sdl2::render::WindowCanvas,
+    // canvas: sdl2::render::WindowCanvas,
+    gl_context: sdl2::video::GLContext,
+    window: sdl2::video::Window,
+    imgui: imgui::Context,
+    imgui_renderer: AutoRenderer,
 
-    renderer: Renderer,
+    // renderer: Renderer,
     is_running: bool,
     last_ticks: u32,
     delta_time: f32
@@ -68,28 +103,42 @@ impl App {
     pub fn init() -> Result<App, String> {
         let sdl_context = sdl2::init()?;
         let video = sdl_context.video()?;
-        let timer = sdl_context.timer()?;
-        let event_pump = sdl_context.event_pump()?;
+
+        let gl_attr = video.gl_attr();
+        gl_attr.set_context_version(3, 3);
+        gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
+
         let window = video.window(
             APP_WINDOW_TITLE, APP_WINDOW_WIDTH, APP_WINDOW_HEIGHT
         ).opengl().build().map_err(|err| err.to_string())?;
 
         let gl_context = window.gl_create_context()?;
         window.gl_make_current(&gl_context)?;
-        video.gl_set_swap_interval(1)?;
+        window.subsystem().gl_set_swap_interval(1)?;
 
-        let canvas = window.into_canvas().build().map_err(|err| err.to_string())?;
+        let timer = sdl_context.timer()?;
 
-        let renderer = build_renderer(canvas.texture_creator())?;
+        // let canvas = window.into_canvas().build().map_err(|err| err.to_string())?;
+
+        // let renderer = build_renderer(canvas.texture_creator())?;
+
+        let gl = glow_context(&window);
+        let (imgui, imgui_renderer) = build_imgui(gl, &window)?;
+
+        let event_pump = sdl_context.event_pump()?;
 
         return Ok(App {
             sdl_context,
             video,
             timer,
             event_pump,
-            canvas,
+            window,
+            gl_context,
+            // canvas,
+            imgui,
+            imgui_renderer,
 
-            renderer,
+            // renderer,
             is_running: true,
             last_ticks: 0,
             delta_time: 0.0
@@ -109,16 +158,25 @@ impl App {
     }
 
     fn render(&mut self) {
-        self.canvas.set_draw_color(sdl2::pixels::Color::RGB(255, 255, 255));
-        self.canvas.clear();
+        // self.canvas.set_draw_color(sdl2::pixels::Color::RGB(255, 255, 255));
+        // self.canvas.clear();
 
-        self.renderer.render();
+        // self.renderer.render();
+        // self.canvas.copy(
+        //     &self.renderer.get_mut_render_texture(), None, None
+        // ).expect("unable to copy render texture on window");
+        // unsafe { self.canvas.render_flush(); }
+
+        let ui = self.imgui.new_frame();
+        ui.show_demo_window(&mut true);
+
+        let ui_draw_data = self.imgui.render();
+        unsafe { self.imgui_renderer.gl_context().clear(COLOR_BUFFER_BIT) };
+        self.imgui_renderer.render(ui_draw_data).expect("unable to render ui");
         
-        self.canvas.copy(
-            &self.renderer.get_mut_render_texture(), None, None
-        ).expect("unable to copy render texture on window");
+        self.window.gl_swap_window();
 
-        self.canvas.present();
+        // self.canvas.present();
     }
     
     fn handle_events(&mut self) {
