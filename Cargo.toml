@@ -7,4 +7,5 @@ edition = "2021"
 glow = "0.12.3"
 imgui = "0.11.0"
 imgui-glow-renderer = "0.11.0"
-sdl2 = { version = "0.35.2", features = ["unsafe_textures"] }
+imgui-sdl2-support = "0.11.0"
+sdl2 = { version = "0.34.5", features = ["unsafe_textures"] }
