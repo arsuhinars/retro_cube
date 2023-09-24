@@ -3,6 +3,7 @@ use std::process::ExitCode;
 pub mod utils;
 pub mod raycaster;
 pub mod rendering;
+pub mod ui;
 pub mod app;
 
 #[cfg(test)]
