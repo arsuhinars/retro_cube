@@ -1,4 +1,5 @@
 use std::{ops, convert};
+
 use super::vector::{Vector3, RIGHT_VECTOR};
 
 #[derive(Default, Clone, Copy)]
