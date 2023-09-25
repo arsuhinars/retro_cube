@@ -71,6 +71,24 @@ impl Vector3 {
             x: self.x.abs(), y: self.y.abs(), z: self.z.abs()
         }
     }
+
+    #[inline]
+    pub fn to_degrees(&self) -> Vector3 {
+        Vector3 {
+            x: self.x.to_degrees(),
+            y: self.y.to_degrees(),
+            z: self.z.to_degrees()
+        }
+    }
+
+    #[inline]
+    pub fn to_radians(&self) -> Vector3 {
+        Vector3 {
+            x: self.x.to_radians(),
+            y: self.y.to_radians(),
+            z: self.z.to_radians()
+        }
+    }
 }
 
 impl ops::Add<Vector3> for Vector3 {
@@ -142,5 +160,35 @@ impl ops::Neg for Vector3 {
 
     fn neg(self) -> Self::Output {
         Vector3 { x: -self.x, y: -self.y, z: -self.z }
+    }
+}
+
+impl From<mint::Vector3<f32>> for Vector3 {
+    fn from(value: mint::Vector3<f32>) -> Self {
+        Vector3 {
+            x: value.x,
+            y: value.y,
+            z: value.z
+        }
+    }
+}
+
+impl From<Vector3> for mint::Vector3<f32> {
+    fn from(value: Vector3) -> Self {
+        mint::Vector3 { x: value.x, y: value.y, z: value.z }
+    }
+}
+
+impl From<[f32; 3]> for Vector3 {
+    fn from(value: [f32; 3]) -> Self {
+        Vector3 {
+            x: value[0], y: value[1], z: value[2]
+        }
+    }
+}
+
+impl From<Vector3> for [f32; 3] {
+    fn from(value: Vector3) -> Self {
+        [value.x, value.y, value.z]
     }
 }

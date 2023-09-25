@@ -42,8 +42,10 @@ pub fn inverse_look_at_rotate_matrix(direction: &Vector3) -> Matrix3 {
 }
 
 pub fn euler_rotation_matrix(rotation: &Vector3) -> Matrix3 {
-    let (cos_x, cos_y, cos_z) = (rotation.x.cos(), rotation.y.cos(), rotation.z.cos());
-    let (sin_x, sin_y, sin_z) = (rotation.x.sin(), rotation.y.sin(), rotation.z.sin());
+    let angles = rotation.to_radians();
+
+    let (cos_x, cos_y, cos_z) = (angles.x.cos(), angles.y.cos(), angles.z.cos());
+    let (sin_x, sin_y, sin_z) = (angles.x.sin(), angles.y.sin(), angles.z.sin());
 
     let mut m = Matrix3::default();
     m[0][0] = cos_z * cos_y;
@@ -60,8 +62,10 @@ pub fn euler_rotation_matrix(rotation: &Vector3) -> Matrix3 {
 }
 
 pub fn inverse_euler_rotation_matrix(rotation: &Vector3) -> Matrix3 {
-    let (cos_x, cos_y, cos_z) = (rotation.x.cos(), rotation.y.cos(), rotation.z.cos());
-    let (sin_x, sin_y, sin_z) = (rotation.x.sin(), rotation.y.sin(), rotation.z.sin());
+    let angles = rotation.to_radians();
+
+    let (cos_x, cos_y, cos_z) = (angles.x.cos(), angles.y.cos(), angles.z.cos());
+    let (sin_x, sin_y, sin_z) = (angles.x.sin(), angles.y.sin(), angles.z.sin());
 
     let mut m: [[f32; 3]; 3] = [[0.0; 3]; 3];
     m[0][0] = cos_z * cos_y;
