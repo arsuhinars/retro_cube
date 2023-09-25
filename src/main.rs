@@ -4,6 +4,7 @@ pub mod utils;
 pub mod raycaster;
 pub mod rendering;
 pub mod ui;
+pub mod behaviours;
 pub mod app;
 
 #[cfg(test)]
