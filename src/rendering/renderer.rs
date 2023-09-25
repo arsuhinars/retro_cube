@@ -1,10 +1,11 @@
-use std::cell::{RefCell, Ref};
+use std::cell::{RefCell, Ref, RefMut};
 use std::rc::Rc;
 
 use imgui_glow_renderer::TextureMap as ImguiTextureMap;
 
 use crate::raycaster::{Raycaster, RaycastHit, BoxRaycaster};
 use crate::utils::{color::Color, vector::Vector3};
+
 use super::camera::Camera;
 use super::lightning::{Lightning, DiffuseDirectLightning};
 use super::material::{Material, CheckerMaterial};
@@ -12,7 +13,7 @@ use super::pixel_canvas::PixelCanvas;
 
 pub struct Renderer {
     pixel_canvas: RefCell<PixelCanvas>,
-    camera: Camera,
+    camera: Rc<RefCell<Camera>>,
     raycaster: Box<dyn Raycaster>,
     material: Box<dyn Material>,
     lightning: Box<dyn Lightning>
@@ -23,8 +24,12 @@ impl Renderer {
         self.pixel_canvas.borrow()
     }
 
-    pub fn get_mut_camera(&mut self) -> &mut Camera {
-        &mut self.camera
+    pub fn get_mut_pixel_canvas(&self) -> RefMut<PixelCanvas> {
+        self.pixel_canvas.borrow_mut()
+    }
+
+    pub fn get_camera(&self) -> Rc<RefCell<Camera>> {
+        self.camera.clone()
     }
 
     pub fn get_mut_raycaster(&mut self) -> &mut dyn Raycaster {
@@ -72,7 +77,7 @@ impl Renderer {
     }
 
     fn render_pixel(&self, clip_x: f32, clip_y: f32) -> Color {
-        let (p, d) = self.camera.get_ray_origin_direction(clip_x, clip_y);
+        let (p, d) = self.camera.borrow().get_ray_origin_direction(clip_x, clip_y);
 
         match self.raycaster.raycast(&p, &d) {
             Some(hit) => self.compute_solid_color(&hit),
@@ -85,7 +90,7 @@ impl Renderer {
         return self.lightning.apply_light(base_color, &hit.position, &hit.normal)
     }
 
-    fn compute_background_color(&self, direction: &Vector3) -> Color {
+    fn compute_background_color(&self, _direction: &Vector3) -> Color {
         Color::new(0, 0, 0)
     }
 }
@@ -97,11 +102,8 @@ pub fn build_renderer(
     camera.get_mut_transform().set_position(&Vector3::new(0.0, 0.0, -2.0));
     camera.set_aspect_ratio((render_size[0] as f32) / (render_size[1] as f32));
     
-    let mut raycaster = Box::new(
+    let raycaster = Box::new(
         BoxRaycaster::new(&Vector3::new(1.0, 1.0, 1.0))
-    );
-    raycaster.get_mut_tranform().set_rotation(
-        &Vector3::new(45.0_f32.to_radians(), 45.0_f32.to_radians(), 0.0_f32.to_radians())
     );
 
     let material = Box::new(CheckerMaterial { 
@@ -126,7 +128,7 @@ pub fn build_renderer(
 
     let renderer = Renderer {
         pixel_canvas,
-        camera,
+        camera: Rc::new(RefCell::new(camera)),
         raycaster,
         material,
         lightning
