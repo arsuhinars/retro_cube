@@ -21,34 +21,21 @@ impl PixelCanvas {
         width: usize,
         height: usize
     ) -> Result<PixelCanvas, String> {
-        let mut data_vec = Vec::<u8>::new();
-        data_vec.resize(width * height * 4, 0);
-        let data = data_vec.into_boxed_slice();
-
         let texture = unsafe { gl.create_texture()? };
-        unsafe {
-            gl.bind_texture(TEXTURE_2D, Some(texture));
-            gl.tex_parameter_i32(TEXTURE_2D, glow::TEXTURE_BASE_LEVEL, 0);
-            gl.tex_parameter_i32(TEXTURE_2D, glow::TEXTURE_MAX_LEVEL, 0);
-            gl.tex_parameter_i32(TEXTURE_2D, glow::TEXTURE_MIN_FILTER, glow::NEAREST as i32);
-            gl.tex_parameter_i32(TEXTURE_2D, glow::TEXTURE_MAG_FILTER, glow::NEAREST as i32);
-            gl.tex_image_2d(
-                TEXTURE_2D,
-                0,
-                glow::RGBA as i32,
-                width as i32,
-                height as i32,
-                0,
-                glow::BGRA,
-                glow::UNSIGNED_INT_8_8_8_8_REV,
-                Some(data.as_ref())
-            );
-            gl.bind_texture(TEXTURE_2D, None);
-        }
-
         let imgui_texture_id = texture_map.register(texture).expect("Unable to register texture for imgui glow renderer");
         
-        Ok(PixelCanvas { gl, texture, imgui_texture_id, width, height, data })
+        let mut pixel_canvas = PixelCanvas {
+            gl,
+            texture,
+            imgui_texture_id,
+            width,
+            height,
+            data: Box::new([])
+        };
+
+        pixel_canvas.update_texture();
+
+        Ok(pixel_canvas)
     }
 
     pub fn update_with<F>(&mut self, f: F) where F: FnOnce(PixelWriter) -> () {
@@ -96,6 +83,38 @@ impl PixelCanvas {
 
     pub fn get_imgui_texture_id(&self) -> imgui::TextureId {
         self.imgui_texture_id
+    }
+
+    pub fn resize(&mut self, width: usize, height: usize) {
+        self.width = width;
+        self.height = height;
+        self.update_texture();
+    }
+
+    fn update_texture(&mut self) {
+        let mut data_vec = Vec::<u8>::new();
+        data_vec.resize(self.width * self.height * 4, 0);
+        self.data = data_vec.into_boxed_slice();
+
+        unsafe {
+            self.gl.bind_texture(TEXTURE_2D, Some(self.texture));
+            self.gl.tex_parameter_i32(TEXTURE_2D, glow::TEXTURE_BASE_LEVEL, 0);
+            self.gl.tex_parameter_i32(TEXTURE_2D, glow::TEXTURE_MAX_LEVEL, 0);
+            self.gl.tex_parameter_i32(TEXTURE_2D, glow::TEXTURE_MIN_FILTER, glow::NEAREST as i32);
+            self.gl.tex_parameter_i32(TEXTURE_2D, glow::TEXTURE_MAG_FILTER, glow::NEAREST as i32);
+            self.gl.tex_image_2d(
+                TEXTURE_2D,
+                0,
+                glow::RGBA as i32,
+                self.width as i32,
+                self.height as i32,
+                0,
+                glow::BGRA,
+                glow::UNSIGNED_INT_8_8_8_8_REV,
+                Some(self.data.as_ref())
+            );
+            self.gl.bind_texture(TEXTURE_2D, None);
+        }
     }
 }
 
