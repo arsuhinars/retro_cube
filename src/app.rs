@@ -11,7 +11,7 @@ use imgui_sdl2_support::SdlPlatform as ImguiPlatform;
 use glow::HasContext;
 use imgui;
 
-use crate::{rendering::renderer::{Renderer, build_renderer}, behaviours::material_behaviour::MaterialBehaviour};
+use crate::{rendering::renderer::{Renderer, build_renderer}, behaviours::{material_behaviour::MaterialBehaviour, lightning_behaviour::LightningBehaviour}};
 use crate::ui::ImguiEditor;
 use crate::behaviours::{
     renderer_behaviour::RendererBehaviour,
@@ -48,6 +48,7 @@ pub struct App {
     renderer_behaviour: RendererBehaviour,
     raycaster_behaviour: RaycasterBehaviour,
     material_behaviour: MaterialBehaviour,
+    lightning_behaviour: LightningBehaviour,
     
     is_running: bool,
     time_instant: Instant,
@@ -85,6 +86,7 @@ impl App {
         let renderer_behaviour = RendererBehaviour::new(renderer.clone());
         let raycaster_behaviour = RaycasterBehaviour::new(renderer.clone());
         let material_behaviour = MaterialBehaviour::new(renderer.clone());
+        let lightning_behaviour = LightningBehaviour::new(renderer.clone());
 
         return Ok(App {
             _video: video,
@@ -101,6 +103,7 @@ impl App {
             renderer_behaviour,
             raycaster_behaviour,
             material_behaviour,
+            lightning_behaviour,
 
             is_running: true,
             time_instant: Instant::now(),
@@ -140,7 +143,7 @@ impl App {
             }
 
             if ui.collapsing_header("Lightning", imgui::TreeNodeFlags::empty()) {
-                
+                self.lightning_behaviour.draw_ui(ui);
             }
         });
 
@@ -149,6 +152,7 @@ impl App {
         self.renderer_behaviour.update(self.delta_time);
         self.raycaster_behaviour.update(self.delta_time);
         self.material_behaviour.update(self.delta_time);
+        self.lightning_behaviour.update(self.delta_time);
 
         self.renderer.borrow().get_pixel_canvas().render(
             ui,
