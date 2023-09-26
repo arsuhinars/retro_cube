@@ -4,11 +4,11 @@ pub trait Material {
     fn compute_surface_color(&self, position: &Vector3, normal: &Vector3) -> Color;
 }
 
-pub struct SolidMaterial {
+pub struct FlatMaterial {
     pub color: Color,
 }
 
-impl Material for SolidMaterial {
+impl Material for FlatMaterial {
     fn compute_surface_color(&self, _position: &Vector3, _normal: &Vector3) -> Color {
         self.color
     }

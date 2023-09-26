@@ -57,3 +57,25 @@ impl From<Color> for PixelData {
         (value.a as u32)
     }
 }
+
+impl From<mint::Vector4<f32>> for Color {
+    fn from(value: mint::Vector4<f32>) -> Self {
+        Color {
+            r: (value.x * 255.0) as u8,
+            g: (value.y * 255.0) as u8,
+            b: (value.z * 255.0) as u8,
+            a: (value.w * 255.0) as u8
+        }
+    }
+}
+
+impl From<Color> for mint::Vector4<f32> {
+    fn from(value: Color) -> Self {
+        mint::Vector4 {
+            x: value.r as f32 / 255.0,
+            y: value.g as f32 / 255.0,
+            z: value.b as f32 / 255.0,
+            w: value.a as f32 / 255.0
+        }
+    }
+}

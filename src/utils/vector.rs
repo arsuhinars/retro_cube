@@ -99,11 +99,27 @@ impl ops::Add<Vector3> for Vector3 {
     }
 }
 
+impl ops::AddAssign<Vector3> for Vector3 {
+    fn add_assign(&mut self, rhs: Vector3) {
+        self.x += rhs.x;
+        self.y += rhs.y;
+        self.z += rhs.z;
+    }
+}
+
 impl ops::Add<&Vector3> for Vector3 {
     type Output = Vector3;
 
     fn add(self, rhs: &Vector3) -> Self::Output {
         Vector3 { x: self.x + rhs.x, y: self.y + rhs.y, z: self.z + rhs.z }
+    }
+}
+
+impl ops::AddAssign<&Vector3> for Vector3 {
+    fn add_assign(&mut self, rhs: &Vector3) {
+        self.x += rhs.x;
+        self.y += rhs.y;
+        self.z += rhs.z;
     }
 }
 
@@ -115,11 +131,27 @@ impl ops::Sub<Vector3> for Vector3 {
     }
 }
 
+impl ops::SubAssign<Vector3> for Vector3 {
+    fn sub_assign(&mut self, rhs: Vector3) {
+        self.x -= rhs.x;
+        self.y -= rhs.y;
+        self.z -= rhs.z;
+    }
+}
+
 impl ops::Sub<&Vector3> for Vector3 {
     type Output = Vector3;
 
     fn sub(self, rhs: &Vector3) -> Self::Output {
         Vector3 { x: self.x - rhs.x, y: self.y - rhs.y, z: self.z - rhs.z }
+    }
+}
+
+impl ops::SubAssign<&Vector3> for Vector3 {
+    fn sub_assign(&mut self, rhs: &Vector3) {
+        self.x -= rhs.x;
+        self.y -= rhs.y;
+        self.z -= rhs.z;
     }
 }
 
