@@ -11,15 +11,19 @@ use imgui_sdl2_support::SdlPlatform as ImguiPlatform;
 use glow::HasContext;
 use imgui;
 
-use crate::{rendering::renderer::{Renderer, build_renderer}, ui::ImguiEditor, behaviours::renderer_behaviour::{self, RendererBehaviour}};
-use crate::behaviours::{camera_behaviour::CameraBehaviour, Behaviour};
+use crate::{rendering::renderer::{Renderer, build_renderer}, behaviours::material_behaviour::MaterialBehaviour};
+use crate::ui::ImguiEditor;
+use crate::behaviours::{
+    renderer_behaviour::RendererBehaviour,
+    raycaster_behaviour::RaycasterBehaviour,
+    camera_behaviour::CameraBehaviour,
+    Behaviour
+};
 use crate::ui::build_imgui;
 
 const APP_WINDOW_TITLE: &str = "retro_cube";
 pub const APP_WINDOW_WIDTH: u32 = 640;
 pub const APP_WINDOW_HEIGHT: u32 = 480;
-// const APP_RENDER_WIDTH: usize = 160;
-// const APP_RENDER_HEIGHT: usize = 120;
 
 fn glow_context(window: &sdl2::video::Window) -> glow::Context {
     unsafe {
@@ -30,9 +34,9 @@ fn glow_context(window: &sdl2::video::Window) -> glow::Context {
 }
 
 pub struct App {
-    video: VideoSubsystem,
+    _video: VideoSubsystem,
     event_pump: EventPump,
-    gl_context: GLContext,
+    _gl_context: GLContext,
     window: Window,
 
     imgui: imgui::Context,
@@ -42,6 +46,8 @@ pub struct App {
     renderer: Rc<RefCell<Renderer>>,
     camera_behaviour: CameraBehaviour,
     renderer_behaviour: RendererBehaviour,
+    raycaster_behaviour: RaycasterBehaviour,
+    material_behaviour: MaterialBehaviour,
     
     is_running: bool,
     time_instant: Instant,
@@ -77,11 +83,13 @@ impl App {
         )?));
         let camera_behaviour = CameraBehaviour::new(renderer.borrow().get_camera().clone());
         let renderer_behaviour = RendererBehaviour::new(renderer.clone());
+        let raycaster_behaviour = RaycasterBehaviour::new(renderer.clone());
+        let material_behaviour = MaterialBehaviour::new(renderer.clone());
 
         return Ok(App {
-            video,
+            _video: video,
             event_pump,
-            gl_context,
+            _gl_context: gl_context,
             window,
 
             imgui,
@@ -91,6 +99,8 @@ impl App {
             renderer,
             camera_behaviour,
             renderer_behaviour,
+            raycaster_behaviour,
+            material_behaviour,
 
             is_running: true,
             time_instant: Instant::now(),
@@ -122,11 +132,11 @@ impl App {
             }
 
             if ui.collapsing_header("Raycaster", imgui::TreeNodeFlags::empty()) {
-                
+                self.raycaster_behaviour.draw_ui(ui);
             }
 
             if ui.collapsing_header("Material", imgui::TreeNodeFlags::empty()) {
-                
+                self.material_behaviour.draw_ui(ui);
             }
 
             if ui.collapsing_header("Lightning", imgui::TreeNodeFlags::empty()) {
@@ -137,6 +147,8 @@ impl App {
         self.renderer.borrow_mut().render();
         self.camera_behaviour.update(self.delta_time);
         self.renderer_behaviour.update(self.delta_time);
+        self.raycaster_behaviour.update(self.delta_time);
+        self.material_behaviour.update(self.delta_time);
 
         self.renderer.borrow().get_pixel_canvas().render(
             ui,
