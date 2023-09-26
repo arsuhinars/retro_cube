@@ -47,7 +47,7 @@ impl LightningBehaviour {
 }
 
 impl Behaviour for LightningBehaviour {
-    fn update(&mut self, delta_time: f32) {}
+    fn update(&mut self, _delta_time: f32) {}
 }
 
 impl ImguiEditor for LightningBehaviour {
