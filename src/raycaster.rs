@@ -1,10 +1,20 @@
 use crate::utils::{vector::Vector3, transform::Transform, plane_cast, EPSILON};
 
+#[derive(Clone, Copy)]
 pub struct RaycastHit {
     pub position: Vector3,
     pub normal: Vector3,
     pub local_position: Vector3,
     pub local_normal: Vector3
+}
+
+impl RaycastHit {
+    fn as_sqr_distance(hit: &Option<RaycastHit>, origin: &Vector3) -> f32 {
+        match hit {
+            Some(h) => (h.position - origin).sqr_length(),
+            None => f32::INFINITY
+        }
+    }
 }
 
 pub trait Raycaster {
@@ -78,22 +88,24 @@ impl Raycaster for BoxRaycaster {
             });
         };
 
-        return None.or_else(|| {
-            try_cast_plane(
-                Vector3::new(0.0, 0.0, 1.0),
-                self.half_size.z
-            )
-        }).or_else(|| {
-            try_cast_plane(
-                Vector3::new(0.0, 1.0, 0.0),
-                self.half_size.y
-            )
-        }.or_else(|| {
-            try_cast_plane(
-                Vector3::new(1.0, 0.0, 0.0),
-                self.half_size.x
-            )
-        }));
+        let results = [
+            try_cast_plane(Vector3::new(0.0, 0.0, 1.0), self.half_size.z),
+            try_cast_plane(Vector3::new(0.0, 1.0, 0.0), self.half_size.y),
+            try_cast_plane(Vector3::new(1.0, 0.0, 0.0), self.half_size.x),
+        ];
+
+        return results.iter().fold(
+            None,
+            |x, y| {
+                let d1 = RaycastHit::as_sqr_distance(&x, origin);
+                let d2 = RaycastHit::as_sqr_distance(y, origin);
+                if d1 < d2 {
+                    x
+                } else {
+                    *y
+                }
+            }
+        )
     }
 }
 
